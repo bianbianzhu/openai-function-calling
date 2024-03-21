@@ -160,3 +160,14 @@ If you want to force the model to call a specific function you can do so by sett
 `tool_choice`: Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message. auto means the model can pick between generating a message or calling a function. Specifying a particular function via {"type": "function", "function": {"name": "my_function"}} forces the model to call that function.
 
 none is the default when no functions are present. auto is the default if functions are present.
+
+## Test
+
+https://dev.to/mangadev/set-up-a-backend-nodejs-typescript-jest-using-es-modules-1530
+
+jest ts-jest @types/jest ts-node
+
+yarn ts-jest config:init - jest.config.ts
+
+ReferenceError: module is not defined in ES module scope
+This file is being treated as an ES module because it has a '.js' file extension and '/Users/tianyili/Learn/ml/openai/openai-function-calling/package.json' contains "type": "module". To treat it as a CommonJS script, rename it to use the '.cjs' file extension.

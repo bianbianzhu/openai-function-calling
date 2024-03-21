@@ -5,21 +5,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "dev:node": "node --enable-source-maps --watch dist/index.js",
     "dev": "yarn dev:tsc & yarn dev:node",
     "script:node": "node --enable-source-maps dist/scripts/generate-function-files.js",
-    "function:generate": "yarn build && yarn script:node"
+    "function:generate": "yarn build && yarn script:node",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.11.29",
     "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
   },
   "dependencies": {
