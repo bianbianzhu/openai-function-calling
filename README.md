@@ -37,7 +37,7 @@ referred from the doc:
 
 - A fast and reliable way to extract structured data from text. In the traditional way, for each scenario (question), we need to have a specific function that extracts the data from user input. The can be time-consuming when you scale up. So normally, we require the user to fill in a form. This limits the user experience.
 
-- Say goodbye to using prompt engineering to get the structured data from the model. Models are non-deterministic and people may phase the same question in very different ways, and even setting the temperature to 0, you may still get a output not only consists of JSON but also some text as well. To clean, extract and parse the arguments through another function is necessary and prone to errors. Using Regex or other ways to do the string manipulation is messy.
+- If we don't use the traditional way but use prompt engineering to get the structured data from the model (ask the model to extract data from plain text). Models are non-deterministic and people may phase the same question in very different ways, and even setting the temperature to 0, you may still get a output not only consists of JSON but also some text as well. To clean, extract and parse the arguments through another function is necessary and prone to errors. Using Regex or other ways to do the string manipulation is messy.
 
 - Even we can set the response format to JSON mode, we sometimes still need to pre-process the data to get what we want.
 
