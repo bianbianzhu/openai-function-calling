@@ -43,6 +43,98 @@ referred from the doc:
 
 ## Code Example
 
+### Function Description
+
+It automatically fills the arguments with correct info based on the prompt
+
+Note: The function does not exist yet
+
+Remember even the description is a javascript object, it will be converted to a JSON when you call the model.
+
+#### The required keys for `function`:
+
+- `name`: The name of the function.
+- `description`: A description of the function.
+- `parameters`: An object which represents the parameters of the function. It contains `type`, `description`, and `required` keys.
+  - `type`: The type of the parameter(s). It is normally `object`.
+  - `properties`: An object that shows all the parameters as its keys. Each key is paired with an object that contains `type` and `description` keys, to describe the parameter.
+  - `required`: An array of required parameters.
+
+```json
+{
+  "name": "get_current_weather",
+  "description": "Get the current weather in a location.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "description": "The city to get the weather for, e.g. Melbourne"
+      },
+      "format": {
+        "type": "string",
+        "enum": ["celsius", "fahrenheit"],
+        "description": "The temperature unit to use. Infer this from the users location."
+      }
+    },
+    "required": ["location", "format"]
+  }
+}
+```
+
+#### Return value
+
+To access to the arguments of the function which extracted from the user prompt by the LLM.
+
+The arguments are in JSON format.
+
+```typescript
+response.choices[0]?.message.tool_calls?.[0]?.function.arguments;
+```
+
+#### Features
+
+from this example:
+Function description
+
+```typescript
+  {
+    name: DescribedFunctionName.GetFlightInfo,
+    description: "Get information about a flight between two locations.",
+    parameters: {
+      type: "object",
+      properties: {
+        location_origin: {
+          type: "string",
+          description: "The location of the departure airport. e.g. DUS",
+        },
+        location_destination: {
+          type: "string",
+          description: "The location of the destination airport. e.g. HAM",
+        },
+      },
+      required: ["location_origin", "location_destination"],
+    },
+  },
+```
+
+User prompt
+
+```text
+I want to fly from Amsterdam to New York.
+```
+
+The returned value will convert the location names to the airport codes as we provided in the property description in the function description.
+
+```json
+{
+  "location_origin": "AMS",
+  "location_destination": "JFK"
+}
+```
+
+#### Create the corresponding actual function
+
 ## Parallel function calling
 
 - model's ability to perform multiple function calls together, allowing the effects and results of these function calls to be resolved in parallel.

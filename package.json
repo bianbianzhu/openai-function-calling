@@ -10,7 +10,9 @@
     "start": "node dist/index.js",
     "dev:tsc": "tsc --watch --preserveWatchOutput",
     "dev:node": "node --enable-source-maps --watch dist/index.js",
-    "dev": "yarn dev:tsc & yarn dev:node"
+    "dev": "yarn dev:tsc & yarn dev:node",
+    "script:node": "node --enable-source-maps dist/scripts/generate-function-files.js",
+    "function:generate": "yarn build && yarn script:node"
   },
   "keywords": [],
   "author": "",
