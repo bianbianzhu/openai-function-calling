@@ -2,6 +2,10 @@ import {
   ChatCompletionTool,
   FunctionDefinition,
 } from "openai/resources/index.mjs";
+import {
+  ConvertTypeNameStringLiteralToType,
+  JsonAcceptable,
+} from "../utils/type-utils.js";
 
 export enum DescribedFunctionName {
   GetFlightInfo = "get_flight_info",
@@ -9,8 +13,46 @@ export enum DescribedFunctionName {
   FileComplaint = "file_complaint",
 }
 
-const functionDescriptions: FunctionDefinition[] = [
-  {
+type FunctionParametersNarrowed<T> = {
+  type: JsonAcceptable;
+  properties: T;
+  required: (keyof T)[];
+};
+
+type PropBase<T extends JsonAcceptable = "string"> = {
+  type: T;
+  description: string;
+};
+
+// TODO: fix the typing of any
+export type ConvertedFunctionParamProps<Props extends Record<string, any>> = {
+  [K in keyof Props]: ConvertTypeNameStringLiteralToType<Props[K]["type"]>;
+};
+
+export type GetFlightInfoProps = {
+  location_origin: PropBase;
+  location_destination: PropBase;
+};
+
+export type BookFlightProps = {
+  location_origin: PropBase;
+  location_destination: PropBase;
+  datetime: PropBase;
+  airline: PropBase;
+};
+
+export type FileComplaintProps = {
+  name: PropBase;
+  email: PropBase;
+  text: PropBase;
+};
+
+// The use of satisfies is a workaround for TypeScript as the type of parameters is simply Record<string, unknown>
+const functionDescriptionsMap: Record<
+  DescribedFunctionName,
+  FunctionDefinition
+> = {
+  [DescribedFunctionName.GetFlightInfo]: {
     name: DescribedFunctionName.GetFlightInfo,
     description: "Get information about a flight between two locations.",
     parameters: {
@@ -26,19 +68,19 @@ const functionDescriptions: FunctionDefinition[] = [
         },
       },
       required: ["location_origin", "location_destination"],
-    },
+    } satisfies FunctionParametersNarrowed<GetFlightInfoProps>,
   },
-  {
+  [DescribedFunctionName.BookFlight]: {
     name: DescribedFunctionName.BookFlight,
     description: "Book a flight based on flight information",
     parameters: {
       type: "object",
       properties: {
-        loc_origin: {
+        location_origin: {
           type: "string",
           description: "The departure airport, e.g. DUS",
         },
-        loc_destination: {
+        location_destination: {
           type: "string",
           description: "The destination airport, e.g. HAM",
         },
@@ -51,10 +93,15 @@ const functionDescriptions: FunctionDefinition[] = [
           description: "The service airline, e.g. Lufthansa",
         },
       },
-      required: ["loc_origin", "loc_destination", "datetime", "airline"],
-    },
+      required: [
+        "location_origin",
+        "location_destination",
+        "datetime",
+        "airline",
+      ],
+    } satisfies FunctionParametersNarrowed<BookFlightProps>,
   },
-  {
+  [DescribedFunctionName.FileComplaint]: {
     name: DescribedFunctionName.FileComplaint,
     description: "File a complaint as a customer",
     parameters: {
@@ -74,13 +121,13 @@ const functionDescriptions: FunctionDefinition[] = [
         },
       },
       required: ["name", "email", "text"],
-    },
+    } satisfies FunctionParametersNarrowed<FileComplaintProps>,
   },
-];
+};
 
-export const tools = functionDescriptions.map<ChatCompletionTool>(
-  (description) => ({
-    type: "function",
-    function: description,
-  })
-);
+export const tools = Object.values(
+  functionDescriptionsMap
+).map<ChatCompletionTool>((description) => ({
+  type: "function",
+  function: description,
+}));
