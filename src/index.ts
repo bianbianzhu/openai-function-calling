@@ -3,18 +3,30 @@ import { openai } from "./services/openai.js";
 import { UserPromptMap } from "./services/prompt-map.js";
 import { userPromptInterface } from "./services/user-prompt-interface.js";
 import { tools } from "./services/function-descriptions.js";
-import { isNonEmptyString } from "./utils/type-utils.js";
+import { isChatEnding, processMessage } from "./utils/chat-utils.js";
 
 const messages: ChatCompletionMessageParam[] = [];
 
-const userInput = await userPromptInterface("What can I help you with today? ");
+console.log(
+  "Welcome to the flight booking assistant! What can I help you with today?"
+);
+
+messages.push(UserPromptMap.context());
+
+const userInput = await userPromptInterface("You: ");
 const userPrompt = UserPromptMap.task(userInput);
 messages.push(userPrompt);
 
 const startChat = async (messages: ChatCompletionMessageParam[]) => {
   const lastMessage = messages.at(-1);
 
-  // if (lastMessage?.role === "user" && lastMessage?.content.includes()) {
+  if (!lastMessage) {
+    return "I'm sorry, I don't understand.";
+  }
+
+  if (isChatEnding(lastMessage)) {
+    return "ABC, Goodbye!";
+  }
 
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
@@ -26,12 +38,21 @@ const startChat = async (messages: ChatCompletionMessageParam[]) => {
     tool_choice: "auto",
   });
 
-  return (
-    response.choices[0]?.message.tool_calls?.[0]?.function ??
-    response.choices[0]?.message.content ??
-    "I'm sorry, I don't understand."
-  );
+  const { message } = response.choices[0] ?? {};
+
+  if (!message) {
+    return "Error: No response from the API.";
+  }
+
+  return processMessage(message);
 };
 
 const result = await startChat(messages);
-console.log(result);
+
+if (!result) {
+  console.log("Sorry, I did not understand that. Please try again.");
+} else if (typeof result === "string") {
+  console.log(result);
+} else {
+  console.log(`this is a function calling ${result}`);
+}
