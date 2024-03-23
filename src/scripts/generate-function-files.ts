@@ -6,6 +6,7 @@ Object.values(DescribedFunctionName).forEach((value) => {
   // 'abc.ts' will create a new file in the root directory
   const filePath = `src/services/functions/${value}.ts`;
 
+  // check if the function file already exists, if it does, skip it in the loop
   if (fs.existsSync(filePath)) {
     console.log(`File ${filePath} already exists!`);
     return;

@@ -157,7 +157,9 @@ If you want to force the model to call a specific function you can do so by sett
 
 `function_call` is deprecated and use `tool_choice` instead.
 
-`tool_choice`: Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message. auto means the model can pick between generating a message or calling a function. Specifying a particular function via {"type": "function", "function": {"name": "my_function"}} forces the model to call that function.
+`tool_choice`: Controls which (if any) function is called by the model. none means the model will not call a function and instead generates a message. auto means the model can pick between generating a message or calling a function. If the model can access to multiple functions, it will pick the one that it thinks is most relevant, based on the description of the function, the parameters and the user prompt.
+
+Specifying a particular function via {"type": "function", "function": {"name": "my_function"}} forces the model to call that function.
 
 none is the default when no functions are present. auto is the default if functions are present.
 

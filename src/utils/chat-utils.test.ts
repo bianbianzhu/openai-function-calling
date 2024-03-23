@@ -1,5 +1,9 @@
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import {
+  ChatCompletionMessage,
+  ChatCompletionMessageParam,
+} from "openai/resources/index.mjs";
 import { isChatEnding } from "./chat-utils.js";
+import { processMessage } from "./chat-utils.js";
 
 describe("isChatEnding", () => {
   it("should return true if user message contains chat end signal", () => {
@@ -65,5 +69,41 @@ describe("isChatEnding", () => {
     const result = isChatEnding(message);
 
     expect(result).toBe(false);
+  });
+});
+
+describe("processMessage", () => {
+  it("should return extracted function arguments if message has tool calls", () => {
+    const message: ChatCompletionMessage = {
+      role: "assistant",
+      content: null,
+      tool_calls: [
+        {
+          id: "call_VNFyxIaiRNrGKD8YvpCOZ0Cy",
+          type: "function",
+          function: {
+            name: "test_function",
+            arguments: '{"arg1":"one", "arg2":"two", "arg3":"three"}',
+          },
+        },
+      ],
+    };
+    const expected = {
+      function_name: "test_function",
+      arguments: {
+        arg1: "one",
+        arg2: "two",
+        arg3: "three",
+      },
+    };
+    expect(processMessage(message)).toEqual(expected);
+  });
+
+  it("should return message content if message does not have tool calls", () => {
+    const message: ChatCompletionMessage = {
+      role: "assistant",
+      content: "Hello, I need help with something.",
+    };
+    expect(processMessage(message)).toEqual(message.content);
   });
 });
