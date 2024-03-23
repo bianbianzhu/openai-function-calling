@@ -4,6 +4,7 @@ import { UserPromptMap } from "./services/prompt-map.js";
 import { userPromptInterface } from "./services/user-prompt-interface.js";
 import { tools } from "./services/function-descriptions.js";
 import { isChatEnding, processMessage } from "./utils/chat-utils.js";
+import functionMap from "./services/functions/index.js";
 
 const messages: ChatCompletionMessageParam[] = [];
 
@@ -54,5 +55,21 @@ if (!result) {
 } else if (typeof result === "string") {
   console.log(result);
 } else {
-  console.log(`this is a function calling ${result}`);
+  console.log(result.function_name);
+
+  const info = functionMap[result.function_name as keyof typeof functionMap](
+    result.arguments
+  );
+  console.log(info);
+  messages.push({
+    role: "function",
+    name: result.function_name,
+    content: info,
+  });
+  const response = await startChat(messages);
+  console.log(response);
 }
+
+// add function result to the prompt for a final answer
+
+// The key is to add the function output back to the messages wit a role of "function" and the content as the output

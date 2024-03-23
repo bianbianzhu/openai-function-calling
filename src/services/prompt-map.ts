@@ -7,8 +7,7 @@ type UserPromptMapValue = (userInput?: string) => ChatCompletionMessageParam;
 export const UserPromptMap: Record<UserPromptMapKey, UserPromptMapValue> = {
   context: () => ({
     role: "system",
-    content:
-      "You are an flight booking assistant. You can help users find flights between two locations.",
+    content: "You are an flight booking assistant.",
   }),
   task: (userInput) => ({
     role: "user",

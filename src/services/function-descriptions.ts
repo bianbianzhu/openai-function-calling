@@ -35,6 +35,8 @@ export type GetFlightInfoProps = {
 };
 
 export type BookFlightProps = {
+  name: PropBase;
+  passport: PropBase;
   location_origin: PropBase;
   location_destination: PropBase;
   datetime: PropBase;
@@ -76,6 +78,14 @@ const functionDescriptionsMap: Record<
     parameters: {
       type: "object",
       properties: {
+        name: {
+          type: "string",
+          description: "The name of the user, e.g. John Doe",
+        },
+        passport: {
+          type: "string",
+          description: "The passport number of the user, e.g. 123456789",
+        },
         location_origin: {
           type: "string",
           description: "The departure airport, e.g. DUS",
@@ -98,6 +108,8 @@ const functionDescriptionsMap: Record<
         "location_destination",
         "datetime",
         "airline",
+        "name",
+        "passport",
       ],
     } satisfies FunctionParametersNarrowed<BookFlightProps>,
   },

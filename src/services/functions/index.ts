@@ -7,4 +7,4 @@ export default {
   get_flight_info,
   file_complaint,
   book_flight,
-} satisfies Record<DescribedFunctionName, (...args: any[]) => string | void>;
+} satisfies Record<DescribedFunctionName, (...args: any[]) => string>;
