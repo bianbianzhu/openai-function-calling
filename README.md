@@ -147,6 +147,8 @@ To respond to these function calls, add 3 new messages to the conversation, each
 
 ## Code Example
 
+=======WIP========
+
 ### Description
 
 In this example, we define a single function `get_current_weather`. The model calls the function multiple times, and after sending the `function response` back to the model, we let it decide the next step. It responded with a user-facing message which was telling the user the temperature in San Francisco, Tokyo, and Paris. Depending on the query, it may choose to call a function again.
