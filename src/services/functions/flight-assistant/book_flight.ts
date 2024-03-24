@@ -1,7 +1,5 @@
-import {
-  BookFlightProps,
-  ConvertedFunctionParamProps,
-} from "../function-descriptions.js";
+import { BookFlightProps } from "../../function-descriptions-flight-assistant.js";
+import { ConvertedFunctionParamProps } from "../../function-descriptions.js";
 
 export function book_flight(
   args: ConvertedFunctionParamProps<BookFlightProps>

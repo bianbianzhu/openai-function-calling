@@ -8,9 +8,10 @@ import {
 } from "../utils/type-utils.js";
 
 export enum DescribedFunctionName {
-  GetFlightInfo = "get_flight_info",
-  BookFlight = "book_flight",
   FileComplaint = "file_complaint",
+  getFarms = "get_farms",
+  getActivitiesPerFarm = "get_activities_per_farm",
+  bookActivity = "book_activity",
 }
 
 type FunctionParametersNarrowed<T> = {
@@ -29,24 +30,27 @@ export type ConvertedFunctionParamProps<Props extends Record<string, any>> = {
   [K in keyof Props]: ConvertTypeNameStringLiteralToType<Props[K]["type"]>;
 };
 
-export type GetFlightInfoProps = {
-  location_origin: PropBase;
-  location_destination: PropBase;
-};
-
-export type BookFlightProps = {
-  name: PropBase;
-  passport: PropBase;
-  location_origin: PropBase;
-  location_destination: PropBase;
-  datetime: PropBase;
-  airline: PropBase;
-};
-
 export type FileComplaintProps = {
   name: PropBase;
   email: PropBase;
   text: PropBase;
+};
+
+export type GetFarmsProps = {
+  location: PropBase;
+};
+
+export type GetActivitiesPerFarmProps = {
+  farm_name: PropBase;
+};
+
+export type BookActivityProps = {
+  farm_name: PropBase;
+  activity_name: PropBase;
+  datetime: PropBase;
+  name: PropBase;
+  email: PropBase;
+  number_of_people: PropBase<"number">;
 };
 
 // The use of satisfies is a workaround for TypeScript as the type of parameters is simply Record<string, unknown>
@@ -54,65 +58,6 @@ const functionDescriptionsMap: Record<
   DescribedFunctionName,
   FunctionDefinition
 > = {
-  [DescribedFunctionName.GetFlightInfo]: {
-    name: DescribedFunctionName.GetFlightInfo,
-    description: "Get information about a flight between two locations.",
-    parameters: {
-      type: "object",
-      properties: {
-        location_origin: {
-          type: "string",
-          description: "The location of the departure airport. e.g. DUS",
-        },
-        location_destination: {
-          type: "string",
-          description: "The location of the destination airport. e.g. HAM",
-        },
-      },
-      required: ["location_origin", "location_destination"],
-    } satisfies FunctionParametersNarrowed<GetFlightInfoProps>,
-  },
-  [DescribedFunctionName.BookFlight]: {
-    name: DescribedFunctionName.BookFlight,
-    description: "Book a flight based on flight information",
-    parameters: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          description: "The name of the user, e.g. John Doe",
-        },
-        passport: {
-          type: "string",
-          description: "The passport number of the user, e.g. 123456789",
-        },
-        location_origin: {
-          type: "string",
-          description: "The departure airport, e.g. DUS",
-        },
-        location_destination: {
-          type: "string",
-          description: "The destination airport, e.g. HAM",
-        },
-        datetime: {
-          type: "string",
-          description: "The date and time of the flight, e.g. 2023-01-01 01:01",
-        },
-        airline: {
-          type: "string",
-          description: "The service airline, e.g. Lufthansa",
-        },
-      },
-      required: [
-        "location_origin",
-        "location_destination",
-        "datetime",
-        "airline",
-        "name",
-        "passport",
-      ],
-    } satisfies FunctionParametersNarrowed<BookFlightProps>,
-  },
   [DescribedFunctionName.FileComplaint]: {
     name: DescribedFunctionName.FileComplaint,
     description: "File a complaint as a customer",
@@ -134,6 +79,75 @@ const functionDescriptionsMap: Record<
       },
       required: ["name", "email", "text"],
     } satisfies FunctionParametersNarrowed<FileComplaintProps>,
+  },
+  [DescribedFunctionName.getFarms]: {
+    name: DescribedFunctionName.getFarms,
+    description: "Get the information of farms based on the location",
+    parameters: {
+      type: "object",
+      properties: {
+        location: {
+          type: "string",
+          description: "The location of the farm, e.g. Melbourne VIC",
+        },
+      },
+      required: ["location"],
+    } satisfies FunctionParametersNarrowed<GetFarmsProps>,
+  },
+  [DescribedFunctionName.getActivitiesPerFarm]: {
+    name: DescribedFunctionName.getActivitiesPerFarm,
+    description: "Get the activities available on a farm",
+    parameters: {
+      type: "object",
+      properties: {
+        farm_name: {
+          type: "string",
+          description: "The name of the farm, e.g. Collingwood Children's Farm",
+        },
+      },
+      required: ["farm_name"],
+    } satisfies FunctionParametersNarrowed<GetActivitiesPerFarmProps>,
+  },
+  [DescribedFunctionName.bookActivity]: {
+    name: DescribedFunctionName.bookActivity,
+    description: "Book an activity on a farm",
+    parameters: {
+      type: "object",
+      properties: {
+        farm_name: {
+          type: "string",
+          description: "The name of the farm, e.g. Collingwood Children's Farm",
+        },
+        activity_name: {
+          type: "string",
+          description: "The name of the activity, e.g. Goat Feeding",
+        },
+        datetime: {
+          type: "string",
+          description: "The date and time of the activity",
+        },
+        name: {
+          type: "string",
+          description: "The name of the user",
+        },
+        email: {
+          type: "string",
+          description: "The email address of the user",
+        },
+        number_of_people: {
+          type: "number",
+          description: "The number of people attending the activity",
+        },
+      },
+      required: [
+        "farm_name",
+        "activity_name",
+        "datetime",
+        "name",
+        "email",
+        "number_of_people",
+      ],
+    } satisfies FunctionParametersNarrowed<BookActivityProps>,
   },
 };
 

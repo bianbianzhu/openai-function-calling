@@ -1,7 +1,5 @@
-import {
-  ConvertedFunctionParamProps,
-  GetFlightInfoProps,
-} from "../function-descriptions.js";
+import { GetFlightInfoProps } from "../../function-descriptions-flight-assistant.js";
+import { ConvertedFunctionParamProps } from "../../function-descriptions.js";
 
 /**
  * This function is a mock for getting flight information from a third-party API.
