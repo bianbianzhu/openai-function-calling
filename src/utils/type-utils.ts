@@ -1,3 +1,7 @@
+export type RequiredAll<T> = {
+  [K in keyof T]-?: T[K];
+};
+
 export type JsonAcceptable =
   | "string"
   | "number"

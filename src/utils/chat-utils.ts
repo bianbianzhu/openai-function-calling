@@ -1,16 +1,18 @@
 import {
   ChatCompletionMessage,
   ChatCompletionMessageParam,
-  ChatCompletionMessageToolCall,
   ChatCompletionUserMessageParam,
 } from "openai/resources/index.mjs";
 import { isDefined } from "./common-utils.js";
+import { RequiredAll } from "./type-utils.js";
+import { StaticPromptMap } from "../services/prompt-map.js";
 
 /**
  * ChatCompletionMessageParam is for API request
  * ChatCompletionMessage is for API response
  */
 
+/** This is only a subset of the possible signals that can be used to end the chat */
 const CHAT_END_SIGNALS = [
   "bye",
   "goodbye",
@@ -35,7 +37,13 @@ const CHAT_END_SIGNALS = [
  * @param message - the message from the user
  * @returns true if the chat is ending, false otherwise
  */
-export function isChatEnding(message: ChatCompletionMessageParam) {
+export function isChatEnding(
+  message: ChatCompletionMessageParam | undefined | null
+) {
+  if (!isDefined(message)) {
+    return console.log(StaticPromptMap.fallback);
+  }
+
   if (!isUserMessage(message)) {
     return false;
   }
@@ -67,14 +75,17 @@ function includeSignal(content: string, signal: string) {
   return content.toLowerCase().includes(signal);
 }
 
-type RequiredAll<T> = {
-  [K in keyof T]-?: T[K];
-};
-
 type ChatCompletionMessageWithToolCalls = RequiredAll<
   Omit<ChatCompletionMessage, "function_call">
 >;
 
+/**
+ * This function processes the message from the API response.
+ * If the message contains tool_calls, it extracts the function arguments.
+ * Otherwise, it returns the content of the message.
+ * @param message the message from the API response
+ * @returns the content of the message (string or null) or the function arguments (object)
+ */
 export function processMessage(message: ChatCompletionMessage) {
   if (isMessageHasToolCalls(message)) {
     return extractFunctionArguments(message);
@@ -94,16 +105,19 @@ function isMessageHasToolCalls(
 }
 
 function extractFunctionArguments(message: ChatCompletionMessageWithToolCalls) {
-  if (!isDefined(message.tool_calls[0]?.function)) {
-    throw new Error("No function found in the tool call");
-  }
+  return message.tool_calls.map((toolCall) => {
+    if (!isDefined(toolCall.function)) {
+      throw new Error("No function found in the tool call");
+    }
 
-  try {
-    return {
-      function_name: message.tool_calls[0].function.name,
-      arguments: JSON.parse(message.tool_calls[0].function.arguments),
-    };
-  } catch (error) {
-    throw new Error("Invalid JSON in function arguments");
-  }
+    try {
+      return {
+        tool_call_id: toolCall.id,
+        function_name: toolCall.function.name,
+        arguments: JSON.parse(toolCall.function.arguments),
+      };
+    } catch (error) {
+      throw new Error("Invalid JSON in function arguments");
+    }
+  });
 }

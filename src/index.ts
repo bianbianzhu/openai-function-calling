@@ -1,75 +1,70 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { openai } from "./services/openai.js";
-import { UserPromptMap } from "./services/prompt-map.js";
+import {
+  StaticPromptMap,
+  SystemPromptMap,
+  UserPromptMap,
+  FunctionPromptMap,
+  AssistantPromptMap,
+} from "./services/prompt-map.js";
 import { userPromptInterface } from "./services/user-prompt-interface.js";
-import { tools } from "./services/function-descriptions.js";
-import { isChatEnding, processMessage } from "./utils/chat-utils.js";
 import functionMap from "./services/functions/index.js";
+import { isNonEmptyString } from "./utils/type-utils.js";
+import { startChat } from "./services/chat.js";
+import { isChatEnding } from "./utils/chat-utils.js";
 
 const messages: ChatCompletionMessageParam[] = [];
 
-console.log(
-  "Welcome to the flight booking assistant! What can I help you with today?"
-);
+console.log(StaticPromptMap.welcome);
 
-messages.push(UserPromptMap.context());
+messages.push(SystemPromptMap.context);
 
 const userInput = await userPromptInterface("You: ");
 const userPrompt = UserPromptMap.task(userInput);
 messages.push(userPrompt);
 
-const startChat = async (messages: ChatCompletionMessageParam[]) => {
-  const lastMessage = messages.at(-1);
+async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
+  while (!isChatEnding(messages.at(-1))) {
+    const result = await startChat(messages);
 
-  if (!lastMessage) {
-    return "I'm sorry, I don't understand.";
+    if (!result) {
+      return console.log(StaticPromptMap.fallback);
+    } else if (isNonEmptyString(result)) {
+      console.log(`Assistant: ${result}`);
+      messages.push(AssistantPromptMap.model_response(result));
+      const userInput = await userPromptInterface("You: ");
+      const userPrompt = UserPromptMap.task(userInput);
+      messages.push(userPrompt);
+    } else {
+      for (const item of result) {
+        const {
+          tool_call_id,
+          function_name,
+          arguments: function_arguments,
+        } = item;
+
+        console.log(
+          `Calling function "${function_name}" with ${JSON.stringify(
+            function_arguments
+          )}`
+        );
+
+        const function_return =
+          functionMap[function_name as keyof typeof functionMap](
+            function_arguments
+          );
+
+        /** The key is to add the function output back to the messages wit a role of "tool", the id of the tool call and the function return as the content */
+        messages.push(
+          FunctionPromptMap.function_response({
+            tool_call_id,
+            content: function_return,
+          })
+        );
+      }
+    }
   }
 
-  if (isChatEnding(lastMessage)) {
-    return "ABC, Goodbye!";
-  }
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    top_p: 0.95,
-    temperature: 0.5,
-    messages,
-    max_tokens: 1024,
-    tools,
-    tool_choice: "auto",
-  });
-
-  const { message } = response.choices[0] ?? {};
-
-  if (!message) {
-    return "Error: No response from the API.";
-  }
-
-  return processMessage(message);
-};
-
-const result = await startChat(messages);
-
-if (!result) {
-  console.log("Sorry, I did not understand that. Please try again.");
-} else if (typeof result === "string") {
-  console.log(result);
-} else {
-  console.log(result.function_name);
-
-  const info = functionMap[result.function_name as keyof typeof functionMap](
-    result.arguments
-  );
-  console.log(info);
-  messages.push({
-    role: "function",
-    name: result.function_name,
-    content: info,
-  });
-  const response = await startChat(messages);
-  console.log(response);
+  return console.log(StaticPromptMap.end);
 }
 
-// add function result to the prompt for a final answer
-
-// The key is to add the function output back to the messages wit a role of "function" and the content as the output
+await startWorkFlow(messages);
