@@ -3,9 +3,9 @@ import {
   FileComplaintProps,
 } from "../function-descriptions.js";
 
-export function file_complaint(
+export async function file_complaint(
   args: ConvertedFunctionParamProps<FileComplaintProps>
-): string {
+): Promise<string> {
   const { email, text, name } = args;
   return JSON.stringify({
     email,

@@ -3,9 +3,9 @@ import {
   GetActivitiesPerFarmProps,
 } from "../function-descriptions.js";
 
-export function get_activities_per_farm(
+export async function get_activities_per_farm(
   args: ConvertedFunctionParamProps<GetActivitiesPerFarmProps>
-): string {
+): Promise<string> {
   const { farm_name } = args;
   return JSON.stringify({
     farm_name,

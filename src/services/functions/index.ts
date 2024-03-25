@@ -9,4 +9,4 @@ export default {
   get_farms,
   get_activities_per_farm,
   book_activity,
-} satisfies Record<DescribedFunctionName, (...args: any[]) => string>;
+} satisfies Record<DescribedFunctionName, (...args: any[]) => Promise<string>>;

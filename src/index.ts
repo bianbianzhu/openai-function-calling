@@ -48,10 +48,9 @@ async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
           )}`
         );
 
-        const function_return =
-          functionMap[function_name as keyof typeof functionMap](
-            function_arguments
-          );
+        const function_return = await functionMap[
+          function_name as keyof typeof functionMap
+        ](function_arguments);
 
         /** The key is to add the function output back to the messages wit a role of "tool", the id of the tool call and the function return as the content */
         messages.push(

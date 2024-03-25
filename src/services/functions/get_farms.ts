@@ -3,9 +3,9 @@ import {
   GetFarmsProps,
 } from "../function-descriptions.js";
 
-export function get_farms(
+export async function get_farms(
   args: ConvertedFunctionParamProps<GetFarmsProps>
-): string {
+): Promise<string> {
   const { location } = args;
   return JSON.stringify({
     location,

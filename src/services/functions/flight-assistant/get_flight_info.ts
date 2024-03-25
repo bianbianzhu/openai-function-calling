@@ -8,9 +8,9 @@ import { ConvertedFunctionParamProps } from "../../function-descriptions.js";
  * @param location_destination The location of the destination airport. e.g. HAM, see src/services/function-descriptions.ts for more information.
  * @returns A JSON string of an `object` with flight information. It must a string as it will be passed back to the model again.
  */
-export function get_flight_info<T extends string>(
+export async function get_flight_info<T extends string>(
   args: ConvertedFunctionParamProps<GetFlightInfoProps>
-): string {
+): Promise<string> {
   const flightInfo = {
     origin: args.location_origin,
     destination: args.location_destination,
