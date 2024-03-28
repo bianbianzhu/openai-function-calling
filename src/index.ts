@@ -26,6 +26,7 @@ async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
   while (!isChatEnding(messages.at(-1))) {
     const result = await startChat(messages);
 
+    //TODO: extract this if block to a function
     if (!result) {
       return console.log(StaticPromptMap.fallback);
     } else if (isNonEmptyString(result)) {
@@ -35,6 +36,7 @@ async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
       const userPrompt = UserPromptMap.task(userInput);
       messages.push(userPrompt);
     } else {
+      //TODO: Use for loop instead of Promise.all to ensure the order of the messages; but can be optimized if multiple function calls are independent and parallelizable
       for (const item of result) {
         const {
           tool_call_id,
