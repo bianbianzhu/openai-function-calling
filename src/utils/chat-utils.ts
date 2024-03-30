@@ -98,9 +98,15 @@ function isMessageHasToolCalls(
   message: ChatCompletionMessage
 ): message is ChatCompletionMessageWithToolCalls {
   return (
-    isDefined(message.tool_calls) &&
-    message.tool_calls.length !== 0 &&
-    !isDefined(message.content) // content should be null when tool_calls is present
+    isDefined(message.tool_calls) && message.tool_calls.length !== 0
+    /** && !isDefined(message.content) // content should be null when tool_calls is present - this is a false assumption. content can be present in the message with tool_calls 
+     * @example 
+    {
+      role: 'assistant',
+      content: "I will proceed with booking Activity 2 at Farm 1 on March 20, 2024. To complete the booking, I need some additional information. Let's proceed with the booking process.",
+      tool_calls: [ [Object] ]
+    }
+    */
   );
 }
 

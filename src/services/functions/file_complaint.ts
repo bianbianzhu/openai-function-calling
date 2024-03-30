@@ -12,6 +12,6 @@ export async function file_complaint(
     text,
     name,
     solution: "we will get back to you in 24 hours.",
-    coupon: "10% off your next flight",
+    coupon: "10% off your next visit",
   });
 }

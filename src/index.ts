@@ -2,27 +2,24 @@ import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import {
   StaticPromptMap,
   SystemPromptMap,
-  UserPromptMap,
   FunctionPromptMap,
-  AssistantPromptMap,
 } from "./services/prompt-map.js";
-import { userPromptInterface } from "./services/user-prompt-interface.js";
+import { createUserMessage } from "./services/user-prompt-interface.js";
 import functionMap from "./services/functions/index.js";
 import { isNonEmptyString } from "./utils/type-utils.js";
 import { startChat } from "./services/chat.js";
 import { isChatEnding } from "./utils/chat-utils.js";
 
-const messages: ChatCompletionMessageParam[] = [];
+async function startWorkFlow() {
+  const messages: ChatCompletionMessageParam[] = [];
 
-console.log(StaticPromptMap.welcome);
+  console.log(StaticPromptMap.welcome);
 
-messages.push(SystemPromptMap.context);
+  messages.push(SystemPromptMap.context);
 
-const userInput = await userPromptInterface("You: ");
-const userPrompt = UserPromptMap.task(userInput);
-messages.push(userPrompt);
+  const userPrompt = await createUserMessage();
+  messages.push(userPrompt);
 
-async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
   while (!isChatEnding(messages.at(-1))) {
     const result = await startChat(messages);
 
@@ -31,12 +28,11 @@ async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
       return console.log(StaticPromptMap.fallback);
     } else if (isNonEmptyString(result)) {
       console.log(`Assistant: ${result}`);
-      messages.push(AssistantPromptMap.model_response(result));
-      const userInput = await userPromptInterface("You: ");
-      const userPrompt = UserPromptMap.task(userInput);
+
+      const userPrompt = await createUserMessage();
       messages.push(userPrompt);
     } else {
-      //TODO: Use for loop instead of Promise.all to ensure the order of the messages; but can be optimized if multiple function calls are independent and parallelizable
+      //Warning: Use for loop instead of Promise.all to ensure the order of the messages; but can be optimized if multiple function calls are independent and parallelisable
       for (const item of result) {
         const {
           tool_call_id,
@@ -68,4 +64,4 @@ async function startWorkFlow(messages: ChatCompletionMessageParam[]) {
   return console.log(StaticPromptMap.end);
 }
 
-await startWorkFlow(messages);
+await startWorkFlow();

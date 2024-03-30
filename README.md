@@ -31,7 +31,7 @@ referred from the doc:
 1. Parse the string into JSON in your code, and call your function with the provided arguments if they exist.
 1. Call the model again by appending the function response as a new message, and let the model summarize the results back to the user.
 
-<img src="./images/openai-function-calling.jpg">
+<img src="./images/openai-fc-preview.jpg">
 
 ## Why we need it?
 
