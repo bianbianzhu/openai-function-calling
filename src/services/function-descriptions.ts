@@ -7,6 +7,13 @@ import {
   JsonAcceptable,
 } from "../utils/type-utils.js";
 
+/**
+ * To add a new function description and its corresponding function, follow the steps below:
+ * 1. Add a new enum value to DescribedFunctionName, e.g. DoNewThings
+ * 2. Add Props type for the function parameters, e.g. DoNewThingsProps
+ * 3. Add a new entry to functionDescriptionsMap object
+ * 4. Create a new function with the same name as the enum value under the function folder
+ */
 export enum DescribedFunctionName {
   FileComplaint = "file_complaint",
   getFarms = "get_farms",
