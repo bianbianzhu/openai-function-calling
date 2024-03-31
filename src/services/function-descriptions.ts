@@ -21,7 +21,9 @@ export enum DescribedFunctionName {
   bookActivity = "book_activity",
 }
 
-type FunctionParametersNarrowed<T> = {
+type FunctionParametersNarrowed<
+  T extends Record<string, PropBase<JsonAcceptable>>
+> = {
   type: JsonAcceptable;
   properties: T;
   required: (keyof T)[];
@@ -32,8 +34,9 @@ type PropBase<T extends JsonAcceptable = "string"> = {
   description: string;
 };
 
-// TODO: fix the typing of any
-export type ConvertedFunctionParamProps<Props extends Record<string, any>> = {
+export type ConvertedFunctionParamProps<
+  Props extends Record<string, PropBase<JsonAcceptable>>
+> = {
   [K in keyof Props]: ConvertTypeNameStringLiteralToType<Props[K]["type"]>;
 };
 
