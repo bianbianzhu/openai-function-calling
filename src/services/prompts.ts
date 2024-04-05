@@ -1,34 +1,33 @@
-import {
-  ChatCompletionAssistantMessageParam,
-  ChatCompletionSystemMessageParam,
-  ChatCompletionToolMessageParam,
-  ChatCompletionUserMessageParam,
-} from "openai/resources/index.mjs";
+import OpenAI from "openai";
 
-type UserPromptMapKey = "task";
-type SystemPromptMapKey = "context";
-type FunctionPromptMapKey = "function_response";
-type AssistantPromptMapKey = "model_response";
+type ChatCompletionAssistantMessageParam =
+  OpenAI.ChatCompletionAssistantMessageParam;
+type ChatCompletionSystemMessageParam = OpenAI.ChatCompletionSystemMessageParam;
+type ChatCompletionToolMessageParam = OpenAI.ChatCompletionToolMessageParam;
+type ChatCompletionUserMessageParam = OpenAI.ChatCompletionUserMessageParam;
+
+type UserPromptKey = "task";
+type SystemPromptKey = "context";
+type FunctionPromptKey = "function_response";
+type AssistantPromptKey = "model_response";
 /** even without an argument, the type won't give error (think about the `index` and `array` parameters in any array callback methods) */
-type UserPromptMapValue = (
-  userInput?: string
-) => ChatCompletionUserMessageParam;
-type FunctionPromptMapValue = (
+type UserPromptValue = (userInput?: string) => ChatCompletionUserMessageParam;
+type FunctionPromptValue = (
   args: Omit<ChatCompletionToolMessageParam, "role">
 ) => ChatCompletionToolMessageParam;
-type AssistantPromptMapValue = (
+type AssistantPromptValue = (
   modelResponse: string
 ) => ChatCompletionAssistantMessageParam;
 
-export const StaticPromptMap = {
+export const StaticPrompts = {
   welcome:
     "Welcome to the farm assistant! What can I help you with today? You can ask me what I can do.",
   fallback: "I'm sorry, I don't understand.",
   end: "I hope I was able to help you. Goodbye!",
 } as const;
 
-export const SystemPromptMap: Record<
-  SystemPromptMapKey,
+export const SystemPrompts: Record<
+  SystemPromptKey,
   ChatCompletionSystemMessageParam
 > = {
   context: {
@@ -38,7 +37,7 @@ export const SystemPromptMap: Record<
   },
 };
 
-export const UserPromptMap: Record<UserPromptMapKey, UserPromptMapValue> = {
+export const UserPrompts: Record<UserPromptKey, UserPromptValue> = {
   task: (userInput) => ({
     role: "user",
     // use || instead of ?? to give a default value when userInput is an empty string
@@ -46,20 +45,16 @@ export const UserPromptMap: Record<UserPromptMapKey, UserPromptMapValue> = {
   }),
 };
 
-export const FunctionPromptMap: Record<
-  FunctionPromptMapKey,
-  FunctionPromptMapValue
-> = {
-  function_response: ({ tool_call_id, content }) => ({
+export const FunctionPrompts: Record<FunctionPromptKey, FunctionPromptValue> = {
+  function_response: (options) => ({
     role: "tool",
-    tool_call_id,
-    content,
+    ...options,
   }),
 };
 
-export const AssistantPromptMap: Record<
-  AssistantPromptMapKey,
-  AssistantPromptMapValue
+export const AssistantPrompts: Record<
+  AssistantPromptKey,
+  AssistantPromptValue
 > = {
   model_response: (modelResponse) => ({
     role: "assistant",

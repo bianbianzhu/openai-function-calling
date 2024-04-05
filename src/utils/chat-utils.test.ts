@@ -1,9 +1,9 @@
-import {
-  ChatCompletionMessage,
-  ChatCompletionMessageParam,
-} from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import { isChatEnding } from "./chat-utils.js";
 import { processMessage } from "./chat-utils.js";
+
+type ChatCompletionMessage = OpenAI.ChatCompletionMessage;
+type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
 
 describe("isChatEnding", () => {
   it("should return true if user message contains chat end signal", () => {
@@ -88,14 +88,17 @@ describe("processMessage", () => {
         },
       ],
     };
-    const expected = {
-      function_name: "test_function",
-      arguments: {
-        arg1: "one",
-        arg2: "two",
-        arg3: "three",
+    const expected = [
+      {
+        function_name: "test_function",
+        arguments: {
+          arg1: "one",
+          arg2: "two",
+          arg3: "three",
+        },
+        tool_call_id: "call_VNFyxIaiRNrGKD8YvpCOZ0Cy",
       },
-    };
+    ];
     expect(processMessage(message)).toEqual(expected);
   });
 

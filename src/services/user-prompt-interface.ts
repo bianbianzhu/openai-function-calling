@@ -1,5 +1,5 @@
 import readline from "readline";
-import { UserPromptMap } from "./prompt-map.js";
+import { UserPrompts } from "./prompts.js";
 
 const userPromptInterface = async (hint: string) => {
   const userInterface = readline.createInterface({
@@ -17,5 +17,5 @@ const userPromptInterface = async (hint: string) => {
 
 export async function createUserMessage() {
   const userInput = await userPromptInterface("You: ");
-  return UserPromptMap.task(userInput);
+  return UserPrompts.task(userInput);
 }

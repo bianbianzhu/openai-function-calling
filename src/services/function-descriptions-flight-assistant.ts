@@ -1,11 +1,11 @@
-import {
-  ChatCompletionTool,
-  FunctionDefinition,
-} from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import {
   ConvertTypeNameStringLiteralToType,
   JsonAcceptable,
 } from "../utils/type-utils.js";
+
+type ChatCompletionTool = OpenAI.ChatCompletionTool;
+type FunctionDefinition = OpenAI.FunctionDefinition;
 
 enum DescribedFunctionName {
   GetFlightInfo = "get_flight_info",
@@ -50,7 +50,7 @@ export type FileComplaintProps = {
 };
 
 // The use of satisfies is a workaround for TypeScript as the type of parameters is simply Record<string, unknown>
-const functionDescriptionsMapFlightAssistant: Record<
+const FunctionDescriptionsFlightAssistant: Record<
   DescribedFunctionName,
   FunctionDefinition
 > = {
@@ -138,7 +138,7 @@ const functionDescriptionsMapFlightAssistant: Record<
 };
 
 const tools = Object.values(
-  functionDescriptionsMapFlightAssistant
+  FunctionDescriptionsFlightAssistant
 ).map<ChatCompletionTool>((description) => ({
   type: "function",
   function: description,

@@ -12,7 +12,7 @@
     "dev": "yarn dev:tsc & yarn dev:node",
     "script:node": "node --enable-source-maps dist/scripts/generate-function-files.js",
     "function:generate": "yarn script:node",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "test": "yarn build && node --experimental-vm-modules node_modules/.bin/jest"
   },
   "keywords": [],
   "author": "",

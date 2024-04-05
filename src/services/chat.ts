@@ -1,7 +1,9 @@
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import { processMessage } from "../utils/chat-utils.js";
 import { openai } from "./openai.js";
 import { tools } from "./function-descriptions.js";
+
+type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
 
 export const startChat = async (messages: ChatCompletionMessageParam[]) => {
   const response = await openai.chat.completions.create({

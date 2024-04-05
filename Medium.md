@@ -84,20 +84,20 @@ To initiate a conversation, begin with a system message and a user prompt for th
 
 ```typescript
 const messages: ChatCompletionMessageParam[] = [];
-console.log(StaticPromptMap.welcome);
+console.log(StaticPrompts.welcome);
 
-messages.push(SystemPromptMap.context);
+messages.push(SystemPrompts.context);
 
 const userPrompt = await createUserMessage();
 messages.push(userPrompt);
 ```
 
-As my personal preference, all the prompts are stored in map objects for easy access and modification. Please refer to the following code snippets for all the prompts used in the application. Feel free to adopt or modify this approach as suits you.
+As my personal preference, all the prompts are stored in objects for easy access and modification. Please refer to the following code snippets for all the prompts used in the application. Feel free to adopt or modify this approach as suits you.
 
-- StaticPromptMap: Static messages that are used throughout the conversation.
+- StaticPrompts: Static messages that are used throughout the conversation.
 
 ```typescript
-export const StaticPromptMap = {
+export const StaticPrompts = {
   welcome:
     "Welcome to the farm assistant! What can I help you with today? You can ask me what I can do.",
   fallback: "I'm sorry, I don't understand.",
@@ -105,17 +105,16 @@ export const StaticPromptMap = {
 } as const;
 ```
 
-- UserPromptMap: User messages that are generated based on user input.
+- UserPrompts: User messages that are generated based on user input.
 
 ```typescript
-import { ChatCompletionUserMessageParam } from "openai/resources/index.mjs";
+import OpenAI from "openai";
+type ChatCompletionUserMessageParam = OpenAI.ChatCompletionUserMessageParam;
 
-type UserPromptMapKey = "task";
-type UserPromptMapValue = (
-  userInput?: string
-) => ChatCompletionUserMessageParam;
+type UserPromptKey = "task";
+type UserPromptValue = (userInput?: string) => ChatCompletionUserMessageParam;
 
-export const UserPromptMap: Record<UserPromptMapKey, UserPromptMapValue> = {
+export const UserPrompts: Record<UserPromptKey, UserPromptValue> = {
   task: (userInput) => ({
     role: "user",
     content: userInput || "What can you do?",
@@ -123,15 +122,16 @@ export const UserPromptMap: Record<UserPromptMapKey, UserPromptMapValue> = {
 };
 ```
 
-- SystemPromptMap: System messages that are generated based on system context.
+- SystemPrompts: System messages that are generated based on system context.
 
 ```typescript
-import { ChatCompletionSystemMessageParam } from "openai/resources/index.mjs";
+import OpenAI from "openai";
+type ChatCompletionSystemMessageParam = OpenAI.ChatCompletionSystemMessageParam;
 
-type SystemPromptMapKey = "context";
+type SystemPromptKey = "context";
 
-export const SystemPromptMap: Record<
-  SystemPromptMapKey,
+export const SystemPrompts: Record<
+  SystemPromptKey,
   ChatCompletionSystemMessageParam
 > = {
   context: {
@@ -142,25 +142,22 @@ export const SystemPromptMap: Record<
 };
 ```
 
-- FunctionPromptMap: Function messages that are basically the return values of the functions.
+- FunctionPrompts: Function messages that are basically the return values of the functions.
 
 ```typescript
-import { ChatCompletionToolMessageParam } from "openai/resources/index.mjs";
+import OpenAI from "openai";
+type ChatCompletionToolMessageParam = OpenAI.ChatCompletionToolMessageParam;
 
-type FunctionPromptMapKey = "function_response";
+type FunctionPromptKey = "function_response";
 
-type FunctionPromptMapValue = (
+type FunctionPromptValue = (
   args: Omit<ChatCompletionToolMessageParam, "role">
 ) => ChatCompletionToolMessageParam;
 
-export const FunctionPromptMap: Record<
-  FunctionPromptMapKey,
-  FunctionPromptMapValue
-> = {
-  function_response: ({ tool_call_id, content }) => ({
+export const FunctionPrompts: Record<FunctionPromptKey, FunctionPromptValue> = {
+  function_response: (options) => ({
     role: "tool",
-    tool_call_id,
-    content,
+    ...options,
   }),
 };
 ```
@@ -177,14 +174,14 @@ As mentioned earlier, `tools` are essentially the descriptions of functions that
 The following code snippet demonstrates how these tools are defined:
 
 ```typescript
-import {
-  ChatCompletionTool,
-  FunctionDefinition,
-} from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import {
   ConvertTypeNameStringLiteralToType,
   JsonAcceptable,
 } from "../utils/type-utils.js";
+
+type ChatCompletionTool = OpenAI.ChatCompletionTool;
+type FunctionDefinition = OpenAI.FunctionDefinition;
 
 // An enum to define the names of the functions. This will be shared between the function descriptions and the actual functions
 export enum DescribedFunctionName {
@@ -244,106 +241,106 @@ export type BookActivityProps = {
 };
 
 // Define the function descriptions
-const functionDescriptionsMap: Record<
-  DescribedFunctionName,
-  FunctionDefinition
-> = {
-  [DescribedFunctionName.FileComplaint]: {
-    name: DescribedFunctionName.FileComplaint,
-    description: "File a complaint as a customer",
-    parameters: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          description: "The name of the user, e.g. John Doe",
+const FunctionDescriptions: Record<DescribedFunctionName, FunctionDefinition> =
+  {
+    [DescribedFunctionName.FileComplaint]: {
+      name: DescribedFunctionName.FileComplaint,
+      description: "File a complaint as a customer",
+      parameters: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "The name of the user, e.g. John Doe",
+          },
+          email: {
+            type: "string",
+            description: "The email address of the user, e.g. john@doe.com",
+          },
+          text: {
+            type: "string",
+            description: "Description of issue",
+          },
         },
-        email: {
-          type: "string",
-          description: "The email address of the user, e.g. john@doe.com",
+        required: ["name", "email", "text"],
+      } satisfies FunctionParametersNarrowed<FileComplaintProps>,
+    },
+    [DescribedFunctionName.getFarms]: {
+      name: DescribedFunctionName.getFarms,
+      description: "Get the information of farms based on the location",
+      parameters: {
+        type: "object",
+        properties: {
+          location: {
+            type: "string",
+            description: "The location of the farm, e.g. Melbourne VIC",
+          },
         },
-        text: {
-          type: "string",
-          description: "Description of issue",
+        required: ["location"],
+      } satisfies FunctionParametersNarrowed<GetFarmsProps>,
+    },
+    [DescribedFunctionName.getActivitiesPerFarm]: {
+      name: DescribedFunctionName.getActivitiesPerFarm,
+      description: "Get the activities available on a farm",
+      parameters: {
+        type: "object",
+        properties: {
+          farm_name: {
+            type: "string",
+            description:
+              "The name of the farm, e.g. Collingwood Children's Farm",
+          },
         },
-      },
-      required: ["name", "email", "text"],
-    } satisfies FunctionParametersNarrowed<FileComplaintProps>,
-  },
-  [DescribedFunctionName.getFarms]: {
-    name: DescribedFunctionName.getFarms,
-    description: "Get the information of farms based on the location",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The location of the farm, e.g. Melbourne VIC",
+        required: ["farm_name"],
+      } satisfies FunctionParametersNarrowed<GetActivitiesPerFarmProps>,
+    },
+    [DescribedFunctionName.bookActivity]: {
+      name: DescribedFunctionName.bookActivity,
+      description: "Book an activity on a farm",
+      parameters: {
+        type: "object",
+        properties: {
+          farm_name: {
+            type: "string",
+            description:
+              "The name of the farm, e.g. Collingwood Children's Farm",
+          },
+          activity_name: {
+            type: "string",
+            description: "The name of the activity, e.g. Goat Feeding",
+          },
+          datetime: {
+            type: "string",
+            description: "The date and time of the activity",
+          },
+          name: {
+            type: "string",
+            description: "The name of the user",
+          },
+          email: {
+            type: "string",
+            description: "The email address of the user",
+          },
+          number_of_people: {
+            type: "number",
+            description: "The number of people attending the activity",
+          },
         },
-      },
-      required: ["location"],
-    } satisfies FunctionParametersNarrowed<GetFarmsProps>,
-  },
-  [DescribedFunctionName.getActivitiesPerFarm]: {
-    name: DescribedFunctionName.getActivitiesPerFarm,
-    description: "Get the activities available on a farm",
-    parameters: {
-      type: "object",
-      properties: {
-        farm_name: {
-          type: "string",
-          description: "The name of the farm, e.g. Collingwood Children's Farm",
-        },
-      },
-      required: ["farm_name"],
-    } satisfies FunctionParametersNarrowed<GetActivitiesPerFarmProps>,
-  },
-  [DescribedFunctionName.bookActivity]: {
-    name: DescribedFunctionName.bookActivity,
-    description: "Book an activity on a farm",
-    parameters: {
-      type: "object",
-      properties: {
-        farm_name: {
-          type: "string",
-          description: "The name of the farm, e.g. Collingwood Children's Farm",
-        },
-        activity_name: {
-          type: "string",
-          description: "The name of the activity, e.g. Goat Feeding",
-        },
-        datetime: {
-          type: "string",
-          description: "The date and time of the activity",
-        },
-        name: {
-          type: "string",
-          description: "The name of the user",
-        },
-        email: {
-          type: "string",
-          description: "The email address of the user",
-        },
-        number_of_people: {
-          type: "number",
-          description: "The number of people attending the activity",
-        },
-      },
-      required: [
-        "farm_name",
-        "activity_name",
-        "datetime",
-        "name",
-        "email",
-        "number_of_people",
-      ],
-    } satisfies FunctionParametersNarrowed<BookActivityProps>,
-  },
-};
+        required: [
+          "farm_name",
+          "activity_name",
+          "datetime",
+          "name",
+          "email",
+          "number_of_people",
+        ],
+      } satisfies FunctionParametersNarrowed<BookActivityProps>,
+    },
+  };
 
 // Format the function descriptions into tools and export them
 export const tools = Object.values(
-  functionDescriptionsMap
+  FunctionDescriptions
 ).map<ChatCompletionTool>((description) => ({
   type: "function",
   function: description,
@@ -367,7 +364,7 @@ To introduce a new function, proceed as follows:
 
 1. Extend DescribedFunctionName with a new enum, such as `DoNewThings`.
 2. Define a Props type for the parameters, e.g., `DoNewThingsProps`.
-3. Insert a new entry in the `functionDescriptionsMap` object.
+3. Insert a new entry in the `FunctionDescriptions` object.
 4. Implement the new function in the function directory, naming it after the enum value.
 
 ### Step 3: Call the model with the messages and the tools
@@ -514,7 +511,7 @@ const result = await startChat(messages);
 
 if (!result) {
   // Fallback message if response is empty (e.g., network error)
-  return console.log(StaticPromptMap.fallback);
+  console.log(StaticPrompts.fallback);
 } else if (isNonEmptyString(result)) {
   // If the response is a string, log it and prompt the user for the next message
   console.log(`Assistant: ${result}`);
@@ -526,15 +523,15 @@ if (!result) {
     const { tool_call_id, function_name, arguments: function_arguments } = item;
 
     // Execute the function and get the function return
-    const function_return = await functionMap[
-      function_name as keyof typeof functionMap
+    const functionReturn = await AvailableFunctions[
+      function_name as keyof typeof AvailableFunctions
     ](function_arguments);
 
     // Add the function output back to the messages with a role of "tool", the id of the tool call, and the function return as the content
     messages.push(
-      FunctionPromptMap.function_response({
+      FunctionPrompts.function_response({
         tool_call_id,
-        content: function_return,
+        content: functionReturn,
       })
     );
   }
@@ -559,9 +556,9 @@ for (const item of result) {
     )}`
   );
 
-  // Available functions are stored in a map for easy access
-  const function_return = await functionMap[
-    function_name as keyof typeof functionMap
+  // Available functions are stored in an object for easy access
+  const functionReturn = await AvailableFunctions[
+    function_name as keyof typeof AvailableFunctions
   ](function_arguments);
 }
 ```
@@ -578,15 +575,15 @@ for (const item of result) {
     )}`
   );
 
-  const function_return = await functionMap[
-    function_name as keyof typeof functionMap
+  const functionReturn = await AvailableFunctions[
+    function_name as keyof typeof AvailableFunctions
   ](function_arguments);
 
   // Add the function output back to the messages with a role of "tool", the id of the tool call, and the function return as the content
   messages.push(
-    FunctionPromptMap.function_response({
+    FunctionPrompts.function_response({
       tool_call_id,
-      content: function_return,
+      content: functionReturn,
     })
   );
 }
@@ -666,7 +663,7 @@ export function isChatEnding(
 ) {
   // If the message is not defined, log a fallback message
   if (!isDefined(message)) {
-    return console.log(StaticPromptMap.fallback);
+     throw new Error("Cannot find the message!");
   }
 
   // Check if the message is from the user

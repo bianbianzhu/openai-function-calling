@@ -1,21 +1,23 @@
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import {
-  StaticPromptMap,
-  SystemPromptMap,
-  FunctionPromptMap,
-} from "./services/prompt-map.js";
+  StaticPrompts,
+  SystemPrompts,
+  FunctionPrompts,
+} from "./services/prompts.js";
 import { createUserMessage } from "./services/user-prompt-interface.js";
-import functionMap from "./services/functions/index.js";
+import AvailableFunctions from "./services/functions/index.js";
 import { isNonEmptyString } from "./utils/type-utils.js";
 import { startChat } from "./services/chat.js";
 import { isChatEnding } from "./utils/chat-utils.js";
 
+type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
+
 async function startWorkFlow() {
   const messages: ChatCompletionMessageParam[] = [];
 
-  console.log(StaticPromptMap.welcome);
+  console.log(StaticPrompts.welcome);
 
-  messages.push(SystemPromptMap.context);
+  messages.push(SystemPrompts.context);
 
   const userPrompt = await createUserMessage();
   messages.push(userPrompt);
@@ -25,7 +27,7 @@ async function startWorkFlow() {
 
     //TODO: extract this if block to a function
     if (!result) {
-      return console.log(StaticPromptMap.fallback);
+      console.log(StaticPrompts.fallback);
     } else if (isNonEmptyString(result)) {
       console.log(`Assistant: ${result}`);
 
@@ -46,22 +48,22 @@ async function startWorkFlow() {
           )}`
         );
 
-        const function_return = await functionMap[
-          function_name as keyof typeof functionMap
+        const functionReturn = await AvailableFunctions[
+          function_name as keyof typeof AvailableFunctions
         ](function_arguments);
 
         /** The key is to add the function output back to the messages wit a role of "tool", the id of the tool call and the function return as the content */
         messages.push(
-          FunctionPromptMap.function_response({
+          FunctionPrompts.function_response({
             tool_call_id,
-            content: function_return,
+            content: functionReturn,
           })
         );
       }
     }
   }
 
-  return console.log(StaticPromptMap.end);
+  console.log(StaticPrompts.end);
 }
 
 await startWorkFlow();

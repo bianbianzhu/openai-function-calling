@@ -1,11 +1,11 @@
-import {
-  ChatCompletionMessage,
-  ChatCompletionMessageParam,
-  ChatCompletionUserMessageParam,
-} from "openai/resources/index.mjs";
+import OpenAI from "openai";
 import { isDefined } from "./common-utils.js";
 import { RequiredAll } from "./type-utils.js";
-import { StaticPromptMap } from "../services/prompt-map.js";
+import { StaticPrompts } from "../services/prompts.js";
+
+type ChatCompletionMessage = OpenAI.ChatCompletionMessage;
+type ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
+type ChatCompletionUserMessageParam = OpenAI.ChatCompletionUserMessageParam;
 
 /**
  * ChatCompletionMessageParam is for API request
@@ -41,7 +41,7 @@ export function isChatEnding(
   message: ChatCompletionMessageParam | undefined | null
 ) {
   if (!isDefined(message)) {
-    return console.log(StaticPromptMap.fallback);
+    throw new Error("Cannot find the message!");
   }
 
   if (!isUserMessage(message)) {
